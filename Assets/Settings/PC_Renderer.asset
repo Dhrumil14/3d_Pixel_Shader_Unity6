@@ -15,8 +15,16 @@ MonoBehaviour:
   m_Active: 1
   settings:
     renderPassEvent: 500
-    outlineThickness: 3
-    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    outerDarken: 0.35
+    innerBrighten: 0.55
+    outerAlpha: 1
+    innerAlpha: 1
+    depthThreshold: 0.003
+    normalThreshold: 0.2
+    depthEdgeStrength: 1
+    normalEdgeStrength: 1
+    normalEdgeBias: {x: 1, y: 1, z: 1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

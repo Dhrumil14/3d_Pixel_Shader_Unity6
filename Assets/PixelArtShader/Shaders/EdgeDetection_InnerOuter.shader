@@ -2,19 +2,26 @@ Shader "Hidden/Edge Detection InnerOuter"
 {
     Properties
     {
-        _OutlineThickness ("Outline Thickness", Float) = 1
+        _OutlineThickness ("Outline Thickness", Float) = 2
 
-        [Header(Relative Edge Colours)]
+        [Header(Relative Edge Colour)]
         _OuterDarken ("Outer Edge Darken", Range(0, 1)) = 0.35
         _InnerBrighten ("Inner Edge Brighten", Range(0, 2)) = 0.55
 
-        [Header(Edge Strength)]
-        _OuterAlpha ("Outer Edge Alpha", Range(0, 1)) = 1
-        _InnerAlpha ("Inner Edge Alpha", Range(0, 1)) = 0.65
+        [Header(Alpha)]
+        _OuterAlpha ("Outer Alpha", Range(0, 1)) = 1
+        _InnerAlpha ("Inner Alpha", Range(0, 1)) = 0.55
 
         [Header(Thresholds)]
-        _DepthThreshold ("Depth Threshold", Range(0.0001, 0.05)) = 0.005
-        _NormalThreshold ("Normal Threshold", Range(0.001, 1)) = 0.25
+        _DepthThreshold ("Depth Threshold", Range(0.0001, 0.05)) = 0.003
+        _NormalThreshold ("Normal Threshold", Range(0.001, 1)) = 0.20
+
+        [Header(Strength)]
+        _DepthEdgeStrength ("Depth Edge Strength", Range(0, 2)) = 1
+        _NormalEdgeStrength ("Normal Edge Strength", Range(0, 2)) = 1
+
+        [Header(Normal Bias)]
+        _NormalEdgeBias ("Normal Edge Bias", Vector) = (1, 1, 1, 0)
     }
 
     SubShader
@@ -28,8 +35,6 @@ Shader "Hidden/Edge Detection InnerOuter"
         ZWrite Off
         Cull Off
         ZTest Always
-
-        // We output only the edge colour, then alpha-blend it over the camera colour.
         Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
@@ -58,120 +63,176 @@ Shader "Hidden/Edge Detection InnerOuter"
             float _DepthThreshold;
             float _NormalThreshold;
 
-            float RobertsCross(float samples[4])
+            float _DepthEdgeStrength;
+            float _NormalEdgeStrength;
+
+            float3 _NormalEdgeBias;
+
+            float GetDepth(float2 uv)
             {
-                float difference_1 = samples[1] - samples[2];
-                float difference_2 = samples[0] - samples[3];
-                return sqrt(difference_1 * difference_1 + difference_2 * difference_2);
+                float rawDepth = SampleSceneDepth(uv);
+                return Linear01Depth(rawDepth, _ZBufferParams);
             }
 
-            float RobertsCross(float3 samples[4])
+            float3 GetNormal(float2 uv)
             {
-                float3 difference_1 = samples[1] - samples[2];
-                float3 difference_2 = samples[0] - samples[3];
-                return sqrt(dot(difference_1, difference_1) + dot(difference_2, difference_2));
+                return normalize(SampleSceneNormals(uv));
             }
 
-            float3 SampleSceneNormalsRemapped(float2 uv)
+            float3 GetSceneColour(float2 uv)
             {
-                return SampleSceneNormals(uv) * 0.5 + 0.5;
+                return SampleSceneColor(uv);
+            }
+
+            void Outline_float(
+                float2 uv,
+                float depthThreshold,
+                float normalsThreshold,
+                float3 normalEdgeBias,
+                float depthEdgeStrength,
+                float normalEdgeStrength,
+                out float depthOutline,
+                out float normalOutline
+            )
+            {
+                float2 texelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
+                texelSize *= max(1.0, _OutlineThickness);
+
+                float depth = GetDepth(uv);
+                float3 normal = GetNormal(uv);
+
+                float2 uvs[4];
+
+                // Cardinal neighbours: up, down, right, left.
+                uvs[0] = uv + float2(0.0, texelSize.y);
+                uvs[1] = uv - float2(0.0, texelSize.y);
+                uvs[2] = uv + float2(texelSize.x, 0.0);
+                uvs[3] = uv - float2(texelSize.x, 0.0);
+
+                // -----------------------------
+                // Depth edge indicator
+                // -----------------------------
+
+                float depths[4];
+                float depthDifference = 0.0;
+
+                [unroll]
+                for (int i = 0; i < 4; i++)
+                {
+                    depths[i] = GetDepth(uvs[i]);
+
+                    // Directional depth comparison.
+                    // With Linear01Depth, nearer = smaller, farther = larger.
+                    // neighbour - centre catches current-pixel foreground silhouettes.
+                    depthDifference += depths[i] - depth;
+                }
+
+                float depthEdge = step(depthThreshold, depthDifference);
+
+                // -----------------------------
+                // Normal edge indicator
+                // -----------------------------
+
+                float3 normals[4];
+                float dotSum = 0.0;
+
+                [unroll]
+                for (int j = 0; j < 4; j++)
+                {
+                    normals[j] = GetNormal(uvs[j]);
+
+                    float3 normalDiff = normal - normals[j];
+
+                    // Bias decides which normal changes are accepted.
+                    float normalBiasDiff = dot(normalDiff, normalEdgeBias);
+                    float normalIndicator = smoothstep(-0.01, 0.01, normalBiasDiff);
+
+                    dotSum += dot(normalDiff, normalDiff) * normalIndicator;
+                }
+
+                float indicator = sqrt(dotSum);
+                float normalEdge = step(normalsThreshold, indicator);
+
+                // If this is a strong depth silhouette, depth owns it.
+                // Normals should mainly show inner creases.
+                normalEdge *= (1.0 - depthEdge);
+
+                depthOutline = depthEdge * depthEdgeStrength;
+                normalOutline = normalEdge * normalEdgeStrength;
             }
 
             half4 frag(Varyings IN) : SV_TARGET
             {
                 float2 uv = IN.texcoord;
 
-                float2 texel_size = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
+                float depthEdge;
+                float normalEdge;
 
-                float half_width_f = floor(_OutlineThickness * 0.5);
-                float half_width_c = ceil(_OutlineThickness * 0.5);
+                Outline_float(
+                    uv,
+                    _DepthThreshold,
+                    _NormalThreshold,
+                    _NormalEdgeBias,
+                    _DepthEdgeStrength,
+                    _NormalEdgeStrength,
+                    depthEdge,
+                    normalEdge
+                );
+
+                depthEdge = saturate(depthEdge);
+                normalEdge = saturate(normalEdge);
+
+                float3 centreColour = GetSceneColour(uv);
+
+                // Look around for a nearby foreground/object colour.
+                // This helps the dark outer line inherit the object colour,
+                // instead of only using the exact current pixel.
+                float2 texelSize = float2(1.0 / _ScreenParams.x, 1.0 / _ScreenParams.y);
+                texelSize *= max(1.0, _OutlineThickness);
 
                 float2 uvs[4];
+                uvs[0] = uv + float2(0.0, texelSize.y);
+                uvs[1] = uv - float2(0.0, texelSize.y);
+                uvs[2] = uv + float2(texelSize.x, 0.0);
+                uvs[3] = uv - float2(texelSize.x, 0.0);
 
-                // Roberts Cross diagonal samples.
-                uvs[0] = uv + texel_size * float2(half_width_f, half_width_c) * float2(-1,  1); // top left
-                uvs[1] = uv + texel_size * float2(half_width_c, half_width_c) * float2( 1,  1); // top right
-                uvs[2] = uv + texel_size * float2(half_width_f, half_width_f) * float2(-1, -1); // bottom left
-                uvs[3] = uv + texel_size * float2(half_width_c, half_width_f) * float2( 1, -1); // bottom right
+                float centreDepth = GetDepth(uv);
+                float nearestDepth = centreDepth;
+                float3 nearestColour = centreColour;
 
-                float depth_samples[4];
-                float linear_depth_samples[4];
-                float3 normal_samples[4];
-                float3 colour_samples[4];
-
+                [unroll]
                 for (int i = 0; i < 4; i++)
                 {
-                    depth_samples[i] = SampleSceneDepth(uvs[i]);
-                    linear_depth_samples[i] = Linear01Depth(depth_samples[i], _ZBufferParams);
+                    float d = GetDepth(uvs[i]);
 
-                    normal_samples[i] = SampleSceneNormalsRemapped(uvs[i]);
-                    colour_samples[i] = SampleSceneColor(uvs[i]);
-                }
-
-                float3 centre_colour = SampleSceneColor(uv);
-
-                // ----------------------------
-                // 1. OUTER EDGE: depth based
-                // ----------------------------
-
-                float edge_depth = RobertsCross(linear_depth_samples);
-                edge_depth = edge_depth > _DepthThreshold ? 1.0 : 0.0;
-
-                // Choose the nearest sampled colour so the outer edge inherits object colour,
-                // not sky/plane colour.
-                int nearest_index = 0;
-                float nearest_depth = linear_depth_samples[0];
-
-                for (int j = 1; j < 4; j++)
-                {
-                    if (linear_depth_samples[j] < nearest_depth)
+                    if (d < nearestDepth)
                     {
-                        nearest_depth = linear_depth_samples[j];
-                        nearest_index = j;
+                        nearestDepth = d;
+                        nearestColour = GetSceneColour(uvs[i]);
                     }
                 }
 
-                float3 nearest_colour = colour_samples[nearest_index];
+                float3 outerColour = nearestColour * _OuterDarken;
+                float3 innerColour = saturate(centreColour * (1.0 + _InnerBrighten));
 
-                // Object-relative dark outer edge.
-                float3 outer_colour = nearest_colour * _OuterDarken;
-
-                // ----------------------------
-                // 2. INNER EDGE: normal based
-                // ----------------------------
-
-                float edge_normal = RobertsCross(normal_samples);
-                edge_normal = edge_normal > _NormalThreshold ? 1.0 : 0.0;
-
-                // Avoid normal highlights fighting with silhouette depth outlines.
-                // Depth owns external edges. Normals should mostly handle inner creases.
-                edge_normal *= (1.0 - edge_depth);
-
-                // Object-relative bright inner edge.
-                float3 inner_colour = saturate(centre_colour * (1.0 + _InnerBrighten));
-
-                // ----------------------------
-                // 3. Output priority
-                // ----------------------------
-
-                float3 final_edge_colour = 0;
-                float final_alpha = 0;
-
-                if (edge_depth > 0.5)
+                // Depth edges are dark outer lines.
+                if (depthEdge > 0.5)
                 {
-                    final_edge_colour = outer_colour;
-                    final_alpha = _OuterAlpha;
-                }
-                else if (edge_normal > 0.5)
-                {
-                    final_edge_colour = inner_colour;
-                    final_alpha = _InnerAlpha;
+                    return half4(outerColour, _OuterAlpha);
                 }
 
-                return half4(final_edge_colour, final_alpha);
+                // Normal edges are light inner highlights.
+                if (normalEdge > 0.5)
+                {
+                    return half4(innerColour, _InnerAlpha);
+                }
+
+                return half4(0, 0, 0, 0);
             }
 
             ENDHLSL
         }
     }
+
+    FallBack Off
 }

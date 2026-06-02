@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 30875206}
   - component: {fileID: 30875205}
   - component: {fileID: 30875204}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -298,6 +298,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 32f68241e729aa641ae303677eb5eec6, type: 3}
       propertyPath: m_Name
       value: Icosphere
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 32f68241e729aa641ae303677eb5eec6, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -742,7 +746,7 @@ GameObject:
   - component: {fileID: 1891803304}
   - component: {fileID: 1891803303}
   - component: {fileID: 1891803302}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -854,7 +858,7 @@ GameObject:
   - component: {fileID: 2039405993}
   - component: {fileID: 2039405992}
   - component: {fileID: 2039405991}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
