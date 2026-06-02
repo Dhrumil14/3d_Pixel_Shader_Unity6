@@ -1,5 +1,22 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8964472478003058582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a73950f3f732acd45b9e1cc5258010b7, type: 3}
+  m_Name: EdgeDetection_InnerOuter
+  m_EditorClassIdentifier: Assembly-CSharp::EdgeDetection_InnerOuter
+  m_Active: 1
+  settings:
+    renderPassEvent: 500
+    outlineThickness: 3
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28,7 +45,8 @@ MonoBehaviour:
   - {fileID: 7833122117494664109}
   - {fileID: 5681335562933106603}
   - {fileID: 4442909331729685664}
-  m_RendererFeatureMap: ad6b866f10d7b46cabf76bee9728d84ea01c04677f62a83d
+  - {fileID: -8964472478003058582}
+  m_RendererFeatureMap: ad6b866f10d7b46cabf76bee9728d84ea01c04677f62a83d6aa8dcedc6cb9783
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 0}
@@ -69,7 +87,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8bb6932bf24d9a459396ad364a0ee13, type: 3}
   m_Name: EdgeDetection
   m_EditorClassIdentifier: Assembly-CSharp::EdgeDetection
-  m_Active: 1
+  m_Active: 0
   settings:
     renderPassEvent: 500
     outlineThickness: 2
