@@ -1,20 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8047235500890769750
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed202cf4e9b931844af4cfefbb9643b9, type: 3}
-  m_Name: DepthEdgeRendererFeature
-  m_EditorClassIdentifier: Assembly-CSharp::DepthEdgeRendererFeature
-  m_Active: 1
-  settings:
-    edgeMaterial: {fileID: 2100000, guid: d6f46c9056076f34c83397263538b272, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41,9 +26,9 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 7200000, guid: b9a23f869c4fd45f19c5ada54dd82176, type: 3}
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
-  - {fileID: -8047235500890769750}
   - {fileID: 5681335562933106603}
-  m_RendererFeatureMap: ad6b866f10d7b46caa367eb1f2795290abf76bee9728d84e
+  - {fileID: 4442909331729685664}
+  m_RendererFeatureMap: ad6b866f10d7b46cabf76bee9728d84ea01c04677f62a83d
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 0}
@@ -72,6 +57,23 @@ MonoBehaviour:
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &4442909331729685664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8bb6932bf24d9a459396ad364a0ee13, type: 3}
+  m_Name: EdgeDetection
+  m_EditorClassIdentifier: Assembly-CSharp::EdgeDetection
+  m_Active: 1
+  settings:
+    renderPassEvent: 500
+    outlineThickness: 2
+    outlineColor: {r: 0.08235294, g: 0.101960786, b: 0.14117648, a: 1}
 --- !u!114 &5681335562933106603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84,10 +86,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8785693081b4eb4daf60d8bd3b8505e, type: 3}
   m_Name: PixelOnlyRendererFeature
   m_EditorClassIdentifier: Assembly-CSharp::PixelOnlyRendererFeature
-  m_Active: 0
+  m_Active: 1
   settings:
-    width: 320
-    height: 180
+    width: 426
+    height: 240
     upscaleMaterial: {fileID: 2100000, guid: 60ed967c2972da6489a1a6f0e050908b, type: 2}
 --- !u!114 &7833122117494664109
 MonoBehaviour:
