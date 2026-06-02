@@ -137,7 +137,7 @@ Shader "Custom/PixelArt/ToonLit"
             ENDHLSL
         }
 
-                Pass
+        Pass
         {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" }
@@ -219,6 +219,95 @@ Shader "Custom/PixelArt/ToonLit"
             half4 ShadowPassFragment(Varyings input) : SV_TARGET
             {
                 return 0;
+            }
+
+            ENDHLSL
+        }
+
+                Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode" = "DepthOnly" }
+
+            ZWrite On
+            ColorMask 0
+            Cull Back
+
+            HLSLPROGRAM
+
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+            };
+
+            Varyings DepthOnlyVertex(Attributes input)
+            {
+                Varyings output;
+                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                return output;
+            }
+
+            half4 DepthOnlyFragment(Varyings input) : SV_TARGET
+            {
+                return 0;
+            }
+
+            ENDHLSL
+        }
+
+                Pass
+        {
+            Name "DepthNormals"
+            Tags { "LightMode" = "DepthNormals" }
+
+            ZWrite On
+            Cull Back
+
+            HLSLPROGRAM
+
+            #pragma vertex DepthNormalsVertex
+            #pragma fragment DepthNormalsFragment
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 normalWS : TEXCOORD0;
+            };
+
+            Varyings DepthNormalsVertex(Attributes input)
+            {
+                Varyings output;
+
+                output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                output.normalWS = TransformObjectToWorldNormal(input.normalOS);
+
+                return output;
+            }
+
+            half4 DepthNormalsFragment(Varyings input) : SV_TARGET
+            {
+                float3 normalWS = normalize(input.normalWS);
+
+                // Encode world-space normal into 0-1 colour range.
+                return half4(normalWS * 0.5 + 0.5, 1);
             }
 
             ENDHLSL
