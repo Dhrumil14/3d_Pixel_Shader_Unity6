@@ -73,8 +73,13 @@ public class EdgeDetection : ScriptableRendererFeature
     /// </summary>
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        // Don't render for some views.
-        if (renderingData.cameraData.cameraType == CameraType.Preview
+        if (renderingData.cameraData.cameraType == CameraType.Game)
+        {
+            renderer.EnqueuePass(edgeDetectionPass);
+        }
+
+            // Don't render for some views.
+            if (renderingData.cameraData.cameraType == CameraType.Preview
             || renderingData.cameraData.cameraType == CameraType.Reflection
             || UniversalRenderer.IsOffscreenDepthTexture(ref renderingData.cameraData))
             return;
