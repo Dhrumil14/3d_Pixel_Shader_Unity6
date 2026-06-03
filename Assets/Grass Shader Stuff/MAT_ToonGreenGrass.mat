@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: MAT_ToonGreenGrass
-  m_Shader: {fileID: 4800000, guid: 99c1fed9b095fe84f9a71bb8294e60d7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 5516dfa66568f044293ab1f0cc381b5b, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

@@ -61,7 +61,7 @@ public class Outlines : ScriptableRendererFeature
     {
         if (settings.outlineMaterial == null) return;
 
-        if (renderingData.cameraData.cameraType == CameraType.Game || renderingData.cameraData.cameraType == CameraType.SceneView)
+        if (renderingData.cameraData.cameraType == CameraType.Game)
         {
             renderer.EnqueuePass(_outlinePass);
         }
