@@ -55,7 +55,8 @@ MonoBehaviour:
   - {fileID: 4442909331729685664}
   - {fileID: -8964472478003058582}
   - {fileID: 2568028932752331334}
-  m_RendererFeatureMap: ad6b866f10d7b46cabf76bee9728d84ea01c04677f62a83d6aa8dcedc6cb978346d2a055b578a323
+  - {fileID: 3920230741290520186}
+  m_RendererFeatureMap: ad6b866f10d7b46cabf76bee9728d84ea01c04677f62a83d6aa8dcedc6cb978346d2a055b578a3237a0e30c416756736
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 0}
@@ -114,6 +115,31 @@ MonoBehaviour:
     concaveCutoff: 0.01
     concaveZCutoff: 0.5
     outlineMaterial: {fileID: 2100000, guid: f4d301c67cbfabf49808e2a6dd6ce696, type: 2}
+--- !u!114 &3920230741290520186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e15790b4f1d088046b977e481e6c9ae5, type: 3}
+  m_Name: NewShader
+  m_EditorClassIdentifier: Assembly-CSharp::NewShader
+  m_Active: 1
+  settings:
+    renderPassEvent: 500
+    debugMode: 0
+    outlineThickness: 1
+    outerDarken: 0.35
+    innerBrighten: 0.55
+    outerAlpha: 1
+    innerAlpha: 0.55
+    depthThreshold: 0.014
+    normalThreshold: 0.12
+    depthStrength: 1
+    normalStrength: 1
 --- !u!114 &4442909331729685664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8bb6932bf24d9a459396ad364a0ee13, type: 3}
   m_Name: EdgeDetection
   m_EditorClassIdentifier: Assembly-CSharp::EdgeDetection
-  m_Active: 1
+  m_Active: 0
   settings:
     renderPassEvent: 500
     outlineThickness: 2
