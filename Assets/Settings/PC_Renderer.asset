@@ -101,8 +101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PixelOnlyRendererFeature
   m_Active: 1
   settings:
-    width: 426
-    height: 240
+    width: 640
+    height: 360
     upscaleMaterial: {fileID: 2100000, guid: 60ed967c2972da6489a1a6f0e050908b, type: 2}
 --- !u!114 &7833122117494664109
 MonoBehaviour:

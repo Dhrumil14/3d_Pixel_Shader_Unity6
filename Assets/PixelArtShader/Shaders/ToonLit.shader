@@ -6,9 +6,8 @@ Shader "Custom/PixelArt/ToonLit"
         _BaseColor ("Base Color", Color) = (1, 1, 1, 1)
 
         _Steps ("Lighting Steps", Range(2, 8)) = 3
-        _AmbientStrength ("Ambient Strength", Range(0, 1)) = 0.5
+        _AmbientStrength ("Ambient Strength", Range(0, 1)) = 0.25
         _ShadowStrength ("Shadow Strength", Range(0, 1)) = 0.65
-        _ShadowOpacity ("Shadow Opacity", Range(0, 1)) = 0.15
 
         _SpecularStrength ("Specular Strength", Range(0, 1)) = 0.15
         _SpecularSize ("Specular Size", Range(8, 128)) = 32
@@ -55,7 +54,7 @@ Shader "Custom/PixelArt/ToonLit"
                 half _Steps;
                 half _AmbientStrength;
                 half _ShadowStrength;
-                half _ShadowOpacity;
+
                 half _SpecularStrength;
                 half _SpecularSize;
                 half _SpecularSteps;
@@ -111,18 +110,20 @@ Shader "Custom/PixelArt/ToonLit"
                 half3 lightDir = normalize(mainLight.direction);
                 half3 viewDir = normalize(GetWorldSpaceViewDir(input.positionWS));
 
+                // Basic diffuse lighting.
                 half ndotl = saturate(dot(normalWS, lightDir));
 
-                half steppedDiffuse = SteppedValue(ndotl, _Steps);
+                // Include shadow attenuation.
+                half shadow = mainLight.shadowAttenuation;
+                half shadowedLight = lerp(ndotl * _ShadowStrength, ndotl, shadow);
 
-                half baseLight = max(_AmbientStrength, steppedDiffuse);
+                // Stepped toon lighting.
+                half steppedDiffuse = SteppedValue(shadowedLight, _Steps);
 
-                half shadowFade = lerp(1.0h, mainLight.shadowAttenuation, _ShadowOpacity);
+                // Keep some ambient brightness so shadows are not pure black.
+                half finalLight = max(_AmbientStrength, steppedDiffuse);
 
-                half finalLight = baseLight * shadowFade;
-
-                finalLight = max(finalLight, _AmbientStrength);
-
+                // Simple stepped specular highlight.
                 half3 halfDir = normalize(lightDir + viewDir);
                 half spec = pow(saturate(dot(normalWS, halfDir)), _SpecularSize);
                 spec = SteppedValue(spec, _SpecularSteps) * _SpecularStrength;
@@ -163,7 +164,7 @@ Shader "Custom/PixelArt/ToonLit"
                 half _Steps;
                 half _AmbientStrength;
                 half _ShadowStrength;
-                half _ShadowOpacity;
+
                 half _SpecularStrength;
                 half _SpecularSize;
                 half _SpecularSteps;
@@ -305,6 +306,7 @@ Shader "Custom/PixelArt/ToonLit"
             {
                 float3 normalWS = normalize(input.normalWS);
 
+                // Encode world-space normal into 0-1 colour range.
                 return half4(normalWS * 0.5 + 0.5, 1);
             }
 
