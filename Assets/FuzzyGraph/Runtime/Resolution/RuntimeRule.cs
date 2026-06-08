@@ -1,16 +1,16 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 
-public class RuntimeRule : MonoBehaviour
+namespace FuzzyGraph.Runtime
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [Serializable]
+    public class RuntimeRule
     {
-        
-    }
+        public string ruleID;
+        public string eventID;
+        public int priority;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public List<RuntimeCriteria> Criteria = new();
+        public List<RuntimeConsequence> Consequences = new();
     }
 }
