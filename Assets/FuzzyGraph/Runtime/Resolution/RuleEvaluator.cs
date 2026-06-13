@@ -11,43 +11,56 @@ namespace FuzzyGraph.Runtime
             string eventId)
         {
             RuntimeRule bestRule = null;
-            int bestScore = -1;
+            float bestScore = -1f;
             int bestPriority = int.MinValue;
 
             foreach (RuntimeRule rule in rules)
             {
+                //ignore rules from diff events
                 if (!string.IsNullOrEmpty(rule.eventID) && rule.eventID != eventId)
                     continue;
 
-                int score = CountMatchingCriteria(rule, query);
+                float score = CountMatchingCriteria(rule, query);
 
-                if (score <= 0)
+                //score for rule to qualify
+                if (score <= 0f)
                     continue;
 
-                bool isBetter = score > bestScore || score == bestScore && rule.priority > bestPriority;
+                //bool isBetter = score > bestScore || score == bestScore && rule.priority > bestPriority;
 
-                if (isBetter)
+                bool hasHigherScore = score > bestScore;
+
+                bool hasHigherPriority = score == bestScore && rule.priority > bestPriority;
+
+                if(hasHigherScore ||  hasHigherPriority)
                 {
                     bestRule = rule;
                     bestScore = score;
                     bestPriority = rule.priority;
                 }
+
+                //if (isBetter)
+                //{
+                //    bestRule = rule;
+                //    bestScore = score;
+                //    bestPriority = rule.priority;
+                //}
             }
 
             return new MatchResult
             {
                 rule = bestRule,
-                score = bestScore
+                scoreFloat = bestScore
             };
         }
 
-        private static int CountMatchingCriteria(RuntimeRule rule, WorldStateQuery query)
+        private static float CountMatchingCriteria(RuntimeRule rule, WorldStateQuery query)
         {
-            int score = 0;
+            float score = 0f;
             foreach (RuntimeCriteria criteria in rule.Criteria)
             {
-                if(criteria.Matches(query))
-                    score++;
+                if (criteria.Matches(query))
+                    score += criteria.weight;
             }
             return score;
         }

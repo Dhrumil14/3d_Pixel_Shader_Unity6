@@ -25,7 +25,8 @@ namespace FuzzyGraph.Runtime
                         new RuntimeCriteria
                         {
                             fieldKey = "Player.HasStolenItem",
-                            criteriaOperator = CriteriaOperator.Exists
+                            criteriaOperator = CriteriaOperator.Exists,
+                            weight = 1f
                         }
                     },
 
@@ -50,19 +51,22 @@ namespace FuzzyGraph.Runtime
                         {
                             fieldKey = "Player.HasStolenItem",
                             criteriaOperator = CriteriaOperator.Equals,
-                            expectedVal = FuzzyValue.FromBool(true)
+                            expectedVal = FuzzyValue.FromBool(true),
+                            weight = 5f
                         },
                         new RuntimeCriteria
                         {
                             fieldKey = "Guard.Relationship",
                             criteriaOperator = CriteriaOperator.LessThanOrEqual,
-                            expectedVal = FuzzyValue.FromInt(3)
+                            expectedVal = FuzzyValue.FromInt(3),
+                            weight = 3f
                         },
                         new RuntimeCriteria
                         {
                             fieldKey = "Player.LiedBefore",
                             criteriaOperator = CriteriaOperator.Equals,
-                            expectedVal = FuzzyValue.FromBool(true)
+                            expectedVal = FuzzyValue.FromBool(true),
+                            weight = 4f
                         }
                     },
 
@@ -86,7 +90,7 @@ namespace FuzzyGraph.Runtime
             }
 
             Debug.Log($"Winning Rule: {result.rule.ruleID}");
-            Debug.Log($"Score: {result.score}");
+            Debug.Log($"Score: {result.scoreFloat:0.##}");
 
             foreach(RuntimeConsequence consequence in result.rule.Consequences)
             {

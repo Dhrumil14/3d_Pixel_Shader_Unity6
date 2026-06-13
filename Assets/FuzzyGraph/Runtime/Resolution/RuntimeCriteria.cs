@@ -8,6 +8,7 @@ namespace FuzzyGraph.Runtime
         public string fieldKey;
         public CriteriaOperator criteriaOperator;
         public FuzzyValue expectedVal;
+        public float weight = 1f;
 
         public bool Matches(WorldStateQuery query)
         {
